@@ -249,10 +249,20 @@ LV_EXPORT_CONST_INT(LV_DRAW_BUF_ALIGN);
         #define LV_WAYLAND_USE_G2D 0
         #define LV_WAYLAND_USE_SHM 1
     #endif
+    /*The EGL backend uses the Linux DMA-BUF protocol to accelerate the software
+     *rendering path. It is handled internally (not a user option): enabled only
+     *when no GPU draw unit is active, and falls back to the classic software
+     *path at run time when DMA-BUF is unavailable.*/
+    #if LV_WAYLAND_USE_EGL && !(LV_USE_DRAW_OPENGLES || LV_USE_DRAW_NANOVG)
+        #define LV_WAYLAND_USE_EGL_DMABUF 1
+    #else
+        #define LV_WAYLAND_USE_EGL_DMABUF 0
+    #endif
 #else
     #define LV_WAYLAND_USE_G2D 0
     #define LV_WAYLAND_USE_SHM 0
     #define LV_WAYLAND_USE_EGL 0
+    #define LV_WAYLAND_USE_EGL_DMABUF 0
 #endif
 
 #if LV_USE_LINUX_DRM

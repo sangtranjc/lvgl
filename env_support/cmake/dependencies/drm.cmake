@@ -1,3 +1,6 @@
+# May be included by more than one feature (Linux DRM, Wayland EGL DMA-BUF); link only once.
+include_guard(GLOBAL)
+
 option(LV_USE_FIND_PACKAGE_LIBDRM "Resolve libdrm via find_package"
        ${LV_USE_FIND_PACKAGE})
 option(LV_USE_PKG_CONFIG_LIBDRM "Resolve libdrm via pkg-config"

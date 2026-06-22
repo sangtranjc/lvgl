@@ -86,6 +86,50 @@ To enable the EGL backend:
 **Note:** If your target board has OpenGL ES 2.0 support, this backend can be used with LVGL's 3D rendering
 capabilities for glTF model visualization. See [3D/glTF Support](/integration/embedded_linux/opengl) for details on 3D rendering support.
 
+#### DMA-BUF Software Fast-Path
+
+When the EGL backend is used for **software rendering** (i.e. no OpenGL ES draw
+unit such as `LV_USE_DRAW_OPENGLES` or `LV_USE_DRAW_NANOVG` is enabled), it
+automatically uses the Linux DMA-BUF protocol to present frames. This is not a
+separate backend, and it is not a user-facing option — it is handled internally.
+
+The classic software path uploads the framebuffer to a texture and renders a
+full-screen quad into the EGL window surface, which is then presented with
+`eglSwapBuffers()`. The DMA-BUF fast-path instead uploads the framebuffer
+directly into a DMA-BUF backed texture whose `wl_buffer` is attached to the
+surface. This removes the extra quad pass and the swap copy, which improves
+software-rendering performance on platforms that support zero-copy buffer sharing.
+
+When a GPU draw unit is enabled, EGL renders on the GPU and is presented through
+the EGL surface as usual; the DMA-BUF fast-path is not compiled in that case.
+
+**Behavior:**
+
+- Enabled automatically for the EGL software-rendering path; no configuration required
+- Double buffered, using buffers shared with the compositor through `linux-dmabuf`
+- Transparent run-time fallback: if `zwp_linux_dmabuf_v1`, the DRM/GBM device, or
+  the pixel format is unavailable, the backend automatically uses the classic
+  software path instead
+
+**Requirements:**
+
+- A Wayland compositor with `zwp_linux_dmabuf_v1` support
+- GPU/display driver support for DMA-BUF
+- EGL/OpenGL ES support
+- `libdrm` and `gbm` (used to allocate the shared buffers)
+- The `linux-dmabuf` Wayland protocol generated at build time
+
+When building with LVGL's CMake build system, the `linux-dmabuf` protocol is
+generated and `libdrm`/`gbm` are resolved automatically — no extra steps are
+needed. For other build systems, generate the `linux-dmabuf` protocol with
+`wayland-scanner` and link the additional libraries:
+
+```bash
+-lwayland-egl
+-ldrm
+-lgbm
+```
+
 ### G2D Backend
 
 The G2D backend leverages NXP's hardware-accelerated 2D graphics engine available on i.MX processors. This backend provides improved performance on NXP platforms.

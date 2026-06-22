@@ -35,6 +35,15 @@ if(CONFIG_LV_USE_LINUX_DRM_GBM_BUFFERS OR CONFIG_LV_LINUX_DRM_USE_EGL)
   include(${CMAKE_CURRENT_LIST_DIR}/dependencies/gbm.cmake)
 endif()
 
+# The Wayland EGL DMA-BUF fast-path uses the Linux DMA-BUF protocol (libdrm + gbm).
+# LV_WAYLAND_USE_EGL_DMABUF is derived internally in lv_conf_internal.h, so
+# CONFIG_LV_WAYLAND_USE_EGL_DMABUF is set automatically and the dependency is
+# fetched without any user action.
+if(CONFIG_LV_WAYLAND_USE_EGL_DMABUF)
+  include(${CMAKE_CURRENT_LIST_DIR}/dependencies/drm.cmake)
+  include(${CMAKE_CURRENT_LIST_DIR}/dependencies/gbm.cmake)
+endif()
+
 if(CONFIG_LV_USE_WAYLAND)
   include(${CMAKE_CURRENT_LIST_DIR}/dependencies/wayland.cmake)
 endif()
